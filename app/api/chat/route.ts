@@ -4,6 +4,7 @@ import {smoothStream} from "ai";
 
 
 export const maxDuration = 30;
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
     const { messages } = await req.json();
@@ -11,12 +12,13 @@ export async function POST(req: Request) {
     const result = streamText({
         model: google('gemini-2.0-flash'),
         messages,
-        temperature : 0.7,
+        temperature : 0.1,
         experimental_telemetry : {
             isEnabled: false,
         },
         experimental_transform : smoothStream({
-            chunking : "line"
+            delayInMs : 5,
+            chunking : "word"
         })
     });
 
