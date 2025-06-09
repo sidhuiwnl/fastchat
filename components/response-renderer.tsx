@@ -1,6 +1,6 @@
 import {marked, RendererObject, type Tokens} from "marked";
 import hljs from "highlight.js";
-import "highlight.js/styles/github-dark.css";
+import "highlight.js/styles/base16/material-darker.min.css";
 
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -11,7 +11,7 @@ const renderer = {
   code(this:RendererObject, { text, lang }: Tokens.Code) {
     const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
     const highlighted = hljs.highlight(text, { language: validLang }).value;
-    return `<pre><code class="hljs language-${validLang}">${highlighted}</code></pre>`;
+    return `<pre><code class="hljs language-${validLang} rounded-2xl mb-2 mr-5">${highlighted}</code></pre>`;
   },
 };
 
@@ -75,7 +75,7 @@ export function MarkedRenderer({ content }: { content: string }) {
 
   return (
       <div
-          className="prose prose-invert max-w-none"
+          className="prose prose-invert max-w-none "
           dangerouslySetInnerHTML={{ __html: html }}
       />
   );
