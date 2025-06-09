@@ -56,15 +56,16 @@ marked.use({
 
         return;
       },
-
-      renderer(token: any) {
+      //@typescript-eslint/no-explicit-any
+      renderer(token) {
         try {
           return katex.renderToString(token.text, {
             displayMode: token.block,
             throwOnError: false,
           });
+
         } catch (err) {
-          return `<code>${token.text}</code>`;
+          return `<code>${token.text(err)}</code>`;
         }
       },
     },
