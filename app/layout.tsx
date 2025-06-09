@@ -23,7 +23,9 @@ export default function RootLayout({
     <html 
     lang="en"
     >
-      
+      <head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+      </head>
       <body
         className={`${dm_sans.className}  antialiased`}
       >
