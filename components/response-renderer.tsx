@@ -1,28 +1,27 @@
-import { marked, type Tokens } from "marked";
+import {marked, RendererObject, type Tokens} from "marked";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
 
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
-// --- Configure Marked for Code Syntax Highlighting ---
-marked.setOptions({
-  highlight: (code, lang) => {
-    const validLang = hljs.getLanguage(lang) ? lang : "plaintext";
-    return hljs.highlight(code, { language: validLang }).value;
+const renderer = {
+
+
+  code(this:RendererObject, { text, lang }: Tokens.Code) {
+    const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
+    const highlighted = hljs.highlight(text, { language: validLang }).value;
+    return `<pre><code class="hljs language-${validLang}">${highlighted}</code></pre>`;
   },
-  langPrefix: "hljs language-",
-});
+};
 
-// --- Add a custom extension for KaTeX math rendering ---
 marked.use({
-
+  renderer,
   extensions: [
     {
       name: "katex",
-      level : "inline",
+      level: "inline",
 
-      // Optional optimization for tokenizer
       start(src) {
         const match = src.match(/\$+/);
         return match ? match.index : undefined;
@@ -56,14 +55,13 @@ marked.use({
 
         return;
       },
-      //@typescript-eslint/no-explicit-any
+
       renderer(token) {
         try {
           return katex.renderToString(token.text, {
             displayMode: token.block,
             throwOnError: false,
           });
-
         } catch (err) {
           return `<code>${token.text(err)}</code>`;
         }
