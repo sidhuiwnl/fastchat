@@ -26,7 +26,6 @@ export async function POST(req: Request) {
       $$\\frac{d}{dx}\\sin(x) = \\cos(x)$$
       `,
         messages,
-        temperature : 0.2,
         experimental_telemetry : {
             isEnabled: false,
         },
