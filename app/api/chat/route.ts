@@ -12,12 +12,12 @@ export async function POST(req: Request) {
     const result = streamText({
         model: google('gemini-2.0-flash'),
         messages,
-        temperature : 0.1,
+        temperature : 0.8,
         experimental_telemetry : {
             isEnabled: false,
         },
         experimental_transform : smoothStream({
-            delayInMs : 5,
+            delayInMs : 1,
             chunking : "word"
         })
     });

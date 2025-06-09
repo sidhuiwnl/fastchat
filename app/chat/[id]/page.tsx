@@ -12,7 +12,7 @@ export default function Chat() {
                     {message.parts.map((part, i) => {
                         switch (part.type) {
                             case 'text':
-                                return <div key={`${message.id}-${i}`} className="text-white">{part.text}</div>;
+                                return <div key={`${message.id}-${i}`} >{part.text}</div>;
                         }
                     })}
                 </div>
