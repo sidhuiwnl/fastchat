@@ -63,11 +63,11 @@ export default function Chat() {
                                         <div
                                             key={`${message.id}-${i}`}
                                             className={`mb-10 flex items-start space-x-3 ${
-                                                message.role === 'user' ? 'flex-row-reverse space-x-reverse justify-end' : ''
+                                                message.role === 'user' ? 'justify-end ' : ''
                                             }`}
                                         >
                                             <div className="flex-shrink-0 mt-1">
-                                                {message.role === 'user' ? <User size={20} /> : <Sparkles size={20} />}
+                                                {message.role === 'user' ? <User size={18} /> : <Sparkles size={18} />}
                                             </div>
                                             <div className="max-w-[80%]">
                                                 <MarkedRenderer content={part.text} />
