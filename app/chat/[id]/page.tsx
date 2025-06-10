@@ -1,11 +1,10 @@
-"use client"
+'use client';
 
-import Chat from "@/components/chat"
-
+import Chat from '@/components/chat';
 
 export default function Page() {
     return (
-        <div className="w-screen h-screen flex items-center justify-center">
+        <div className="w-screen h-screen flex justify-center ">
             <Chat />
         </div>
     );
