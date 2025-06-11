@@ -6,12 +6,12 @@ import { FormEvent } from "react";
 import MemoizedMarkdown from "@/components/markdown-renderer";
 
 export default function Chat() {
-    const { messages, input, handleInputChange, handleSubmit } = useChat();
+    const { messages, input, handleInputChange, handleSubmit,status } = useChat();
     const [isFirstMessage, setIsFirstMessage] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
+
 
     const handleSubmitWithTitle = async (e: FormEvent) => {
-        setIsLoading(true);
+
         e.preventDefault();
 
         const currentInput = input.trim();
@@ -36,7 +36,7 @@ export default function Chat() {
                 console.error('Error generating title:', err);
             } finally {
                 setIsFirstMessage(false);
-                setIsLoading(false);
+
             }
         }
     };
@@ -53,16 +53,24 @@ export default function Chat() {
                                     return (
                                         <div
                                             key={`${message.id}-${i}`}
-                                            className={`flex ${message.role === 'user' ? 'justify-end mb-4  ' : 'justify-start'}`}
+                                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
                                         >
-                                            <div className={`max-w-[80%] ${message.role === 'assistant' ? 'mt-1 pb-20' : ''}`}>
+                                            <div
+                                                className={cn(
+                                                    message.role === 'user'
+                                                        ? "  px-4 py-2 rounded-lg inline-block w-fit max-w-[80%] dark:bg-neutral-300"
+                                                        : "max-w-[80%] mt-1 pb-20"
+                                                )}
+                                            >
                                                 <MemoizedMarkdown
                                                     content={part.text || ""}
                                                     id={message.id}
                                                     size="default"
+                                                    className={message.role === 'user' ? 'text-black dark:text-black' : ''}
                                                 />
                                             </div>
                                         </div>
+
                                     );
                                 }
                                 return null;
@@ -72,8 +80,8 @@ export default function Chat() {
                 </div>
             </div>
 
-            {/* Fixed input container */}
-            <div className="fixed -bottom-6 -left-5 w-full px-4 pb-4  z-10">
+
+            <div className="fixed -bottom-6   w-full px-4 pb-4  z-10">
                 <div className="bg-black/5  dark:bg-white/5 w-[1200px]  rounded-xl p-1.5 max-w-4xl mx-auto">
                     <div className="relative  flex flex-col backdrop-blur-xl">
                         <textarea
@@ -113,13 +121,12 @@ export default function Chat() {
                                     )}
                                     onClick={handleSubmitWithTitle}
                                     aria-label="Send message"
-                                    disabled={!input.trim() || isLoading}
+                                    disabled={!input.trim() || status === "streaming"}
                                 >
                                     <ArrowRight
                                         className={cn(
                                             "w-4 h-4 dark:text-white",
                                             !input.trim() ? "opacity-30" : "opacity-100",
-                                            isLoading ? "animate-spin" : ""
                                         )}
                                     />
                                 </button>

@@ -17,7 +17,7 @@ const MarkdownSizeContext = createContext<MarkdownSize>('default');
 const components: Components = {
     code: CodeBlock as Components['code'],
     pre: ({ children }) => <>{children}</>,
-    p: ({ children }) => <p className="my-1">{children}</p>,
+    p: ({ children }) => <>{children}</>,
 };
 
 function CodeBlock({ children, className, ...props }: CodeComponentProps) {
@@ -67,7 +67,7 @@ function Codebar({ lang, codeString }: { lang: string; codeString: string }) {
     };
 
     return (
-        <div className="flex justify-between items-center px-4 py-2 bg-[#2a2a2a] text-gray-300 text-xs">
+        <div className="flex justify-between items-center px-4 py-2 bg-[#2a2a2a]  text-xs">
             <span className="font-mono">{lang}</span>
             <button
                 onClick={copyToClipboard}
@@ -111,11 +111,13 @@ const MarkdownRendererBlock = memo(PureMarkdownRendererBlock);
 const MemoizedMarkdown = memo(({
                                    content,
                                    id,
-                                   size = 'default'
+                                   size = 'default',
+                                   className
                                }: {
     content: string;
     id: string;
     size?: MarkdownSize;
+    className : string
 }) => {
     const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
 
@@ -125,9 +127,10 @@ const MemoizedMarkdown = memo(({
 
     return (
         <MarkdownSizeContext.Provider value={size}>
-            <div className={proseClasses}>
+            <div className={`${proseClasses} ${className}`} >
                 {blocks.map((block, index) => (
                     <MarkdownRendererBlock
+
                         content={block}
                         key={`${id}-block-${index}`}
                     />
