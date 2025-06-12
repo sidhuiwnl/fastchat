@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -8,7 +8,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@/frontend/components/ui/sidebar";
 
 // Mock session data grouped by date
 const sessions = {
@@ -27,7 +27,6 @@ const sessions = {
     ]
 };
 
-
 export function AppSidebar() {
     return (
         <Sidebar>
@@ -35,16 +34,14 @@ export function AppSidebar() {
                 <SidebarGroup>
                     <SidebarGroupLabel>FashChat</SidebarGroupLabel>
 
-
                     <SidebarMenuButton className="w-full mb-4 mt-5  border">
-                        <button className="flex items-center justify-center gap-2  w-full px-4 py-2 rounded-md cursor-pointer  text-white transition-colors">
+                        <div className="flex items-center justify-center gap-2  w-full px-4 py-2 rounded-md cursor-pointer  text-white transition-colors">
                             <Plus size={16} />
                             <span>New Chat</span>
-                        </button>
+                        </div>
                     </SidebarMenuButton>
 
                     <SidebarGroupContent>
-
                         <SidebarGroupLabel>Today</SidebarGroupLabel>
                         <SidebarMenu>
                             {sessions.today.map((session) => (

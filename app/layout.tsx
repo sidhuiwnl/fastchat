@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans,Geist } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import {ThemeProvider} from "@/frontend/components/theme-provider";
 import 'katex/dist/katex.min.css';
+
 
 
 const dm_sans = DM_Sans({
@@ -13,7 +14,6 @@ const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
-
 
 
 export const metadata: Metadata = {
@@ -41,7 +41,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          
+            {children}
+          
         </ThemeProvider>
         
       </body>

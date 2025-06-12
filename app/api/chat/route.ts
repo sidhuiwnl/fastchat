@@ -2,6 +2,7 @@ import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { smoothStream } from 'ai';
 
+
 export const maxDuration = 30;
 export const runtime = 'edge';
 
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
 
     const result = streamText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemini-2.5-flash-preview-04-17'),
         system: `You are FastChat, an AI assistant that can answer questions and help with tasks.
 Be helpful and provide relevant information.
 Be respectful and polite in all interactions.

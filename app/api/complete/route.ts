@@ -2,6 +2,7 @@ import {generateText} from "ai";
 import {NextResponse} from "next/server";
 import { google } from '@ai-sdk/google';
 
+
 export async function POST(req : Request){
     const { prompt,threadId,messageId } = await req.json();
 
@@ -18,6 +19,7 @@ export async function POST(req : Request){
               - do not use quotes or colons`,
             prompt,
         })
+
         return NextResponse.json({ title, messageId, threadId });
     }catch(error){
         console.error('Failed to generate title:', error);
