@@ -5,6 +5,11 @@ import ChatInput from './ChatInput';
 import { useChatActions } from './useChatActions';
 import { ChatStatus } from './types';
 import {UIMessage} from "ai";
+import {createMessage} from "@/frontend/dexie/queries";
+import { v4 as uuidv4 } from 'uuid';
+import {useAPIKeyStore} from "@/frontend/stores/APIKeyStore";
+import {useModelStore} from "@/frontend/stores/ModelStore";
+import {AIModel} from "@/lib/model";
 
 interface ChatProps {
   threadId: string;
@@ -12,7 +17,42 @@ interface ChatProps {
 }
 
 const Chat = ({ threadId ,initialMessages } : ChatProps) => {
-  const { messages, input, handleInputChange, handleSubmit, status, reload } = useChat();
+
+  const { getKey } = useAPIKeyStore();
+
+  const selectedModel = useModelStore((state) => state.selectedModel);
+  const modelConfig = useModelStore((state) => state.getModelConfig());
+  const setSelectedModel = useModelStore((state) => state.setModel);
+
+
+  const { messages, input, handleInputChange, handleSubmit, status, reload } = useChat({
+
+    api : "/api/chat",
+    initialMessages : initialMessages,
+    onFinish : async ({ parts }) => {
+      const aiMessage : UIMessage = {
+        id : uuidv4(),
+        parts : parts as UIMessage['parts'],
+        role : "assistant",
+        content : "",
+        createdAt : new Date(),
+      }
+      try {
+        await createMessage(threadId, aiMessage);
+      }catch (error){
+        console.log(error)
+      }
+    },
+    headers : {
+      [modelConfig.headerKey]: getKey(modelConfig.provider) || '',
+    },
+    body : {
+      model : selectedModel
+    }
+  });
+
+
+
   const {
     hoveredMessageId,
     setHoveredMessageId,
@@ -27,10 +67,22 @@ const Chat = ({ threadId ,initialMessages } : ChatProps) => {
   const [isFirstMessage, setIsFirstMessage] = useState(true);
 
   const handleSubmitWithTitle = async (e: FormEvent) => {
+
+
+
+
     e.preventDefault();
+
     const currentInput = input.trim();
+
     if (!currentInput) return;
-    handleSubmit(e);
+
+    handleSubmit(e,{
+      body : {
+        model : selectedModel,
+      }
+    });
+
     if (isFirstMessage) {
       try {
         const res = await fetch('/api/complete', {
@@ -44,6 +96,8 @@ const Chat = ({ threadId ,initialMessages } : ChatProps) => {
         });
         const { title } = await res.json();
         console.log('Generated title:', title);
+
+
       } catch (err) {
         console.error('Error generating title:', err);
       } finally {
@@ -51,6 +105,7 @@ const Chat = ({ threadId ,initialMessages } : ChatProps) => {
       }
     }
   };
+
 
   return (
     <div className="h-full w-full relative flex flex-col">
@@ -77,6 +132,8 @@ const Chat = ({ threadId ,initialMessages } : ChatProps) => {
         handleInputChange={handleInputChange}
         handleSubmitWithTitle={handleSubmitWithTitle}
         status={status as ChatStatus}
+        onModelChange={(model : AIModel  ) => setSelectedModel(model)}
+        selectedModel={selectedModel}
       />
     </div>
   );

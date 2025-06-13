@@ -11,6 +11,10 @@ export default function Thread() {
 
     const messages = useLiveQuery(() => getMessagesByThreadId(id), [id]);
 
+    console.log("db", messages);
+
+
+
     const convertToUIMessages = (messages?: DBMessage[]) => {
         return messages?.map((message) => ({
             id: message.id,

@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import {AI_MODELS} from "@/lib/model";
 
 export function useChatActions() {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+  const[selectedModel, setSelectedModel] = useState<string>(AI_MODELS[3]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -22,6 +24,8 @@ export function useChatActions() {
     // Optionally update the message in your chat state here
   };
 
+
+
   return {
     hoveredMessageId,
     setHoveredMessageId,
@@ -32,5 +36,7 @@ export function useChatActions() {
     handleCopy,
     handleEdit,
     handleSaveEdit,
+        selectedModel,
+        setSelectedModel,
   };
 } 

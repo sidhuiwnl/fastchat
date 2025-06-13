@@ -26,7 +26,7 @@ interface MessageSummary {
     createdAt: Date;
 }
 
-const db = new Dexie('chat0') as Dexie & {
+const db = new Dexie('FastChat') as Dexie & {
     threads: EntityTable<Thread, 'id'>;
     messages: EntityTable<DBMessage, 'id'>;
     messageSummaries: EntityTable<MessageSummary, 'id'>;
