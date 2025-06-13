@@ -7,31 +7,36 @@ export const getThreads = async () => {
     return await db.threads.orderBy('lastMessageAt').reverse().toArray();
 };
 
-export const createThread = async (id: string) => {
-    return await db.threads.add({
-        id,
-        title: 'New Chat',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessageAt: new Date(),
-    });
+
+export const createThread = async (thread: {
+    id: string;
+    title: string;
+    createdAt: Date;
+    updatedAt: Date;
+    lastMessageAt: Date;
+}) => {
+    return await db.threads.add(thread);
 };
 
-export const updateThread = async (id: string, title: string) => {
-    return await db.threads.update(id, {
-        title,
-        updatedAt: new Date(),
-    });
+export const updateThread = async (
+    id: string,
+    updates: {
+        title?: string;
+        updatedAt?: Date;
+        lastMessageAt?: Date;
+    }
+) => {
+    return await db.threads.update(id, updates);
 };
 
 export const deleteThread = async (id: string) => {
-    return await db.transaction(
+    await db.transaction(
         'rw',
         [db.threads, db.messages, db.messageSummaries],
         async () => {
             await db.messages.where('threadId').equals(id).delete();
             await db.messageSummaries.where('threadId').equals(id).delete();
-            return await db.threads.delete(id);
+             await db.threads.delete(id);
         }
     );
 };
@@ -49,14 +54,14 @@ export const deleteAllThreads = async () => {
 };
 
 export const getMessagesByThreadId = async (threadId: string) => {
-    return await db.messages
+     return await db.messages
         .where('[threadId+createdAt]')
         .between([threadId, Dexie.minKey], [threadId, Dexie.maxKey])
         .toArray();
 };
 
 export const createMessage = async (threadId: string, message: UIMessage) => {
-    return await db.transaction('rw', [db.messages, db.threads], async () => {
+     return await db.transaction('rw', [db.messages, db.threads], async () => {
         await db.messages.add({
             id: message.id,
             threadId,
@@ -82,7 +87,7 @@ export const deleteTrailingMessages = async (
         : [threadId, new Date(createdAt.getTime() + 1)];
     const endKey = [threadId, Dexie.maxKey];
 
-    return await db.transaction(
+   return await db.transaction(
         'rw',
         [db.messages, db.messageSummaries],
         async () => {
@@ -110,7 +115,7 @@ export const createMessageSummary = async (
     messageId: string,
     content: string
 ) => {
-    return await db.messageSummaries.add({
+   return  await db.messageSummaries.add({
         id: uuidv4(),
         threadId,
         messageId,
@@ -120,7 +125,7 @@ export const createMessageSummary = async (
 };
 
 export const getMessageSummaries = async (threadId: string) => {
-    return await db.messageSummaries
+   return  await db.messageSummaries
         .where('[threadId+createdAt]')
         .between([threadId, Dexie.minKey], [threadId, Dexie.maxKey])
         .toArray();

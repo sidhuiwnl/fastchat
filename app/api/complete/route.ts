@@ -7,6 +7,8 @@ export async function POST(req: Request) {
     const headersList = await headers();
     const googleApiKey = headersList.get('X-Google-API-Key');
 
+
+
     if (!googleApiKey) {
         return NextResponse.json(
             {

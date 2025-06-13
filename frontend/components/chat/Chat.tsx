@@ -5,7 +5,7 @@ import ChatInput from './ChatInput';
 import { useChatActions } from './useChatActions';
 import { ChatStatus } from './types';
 import {UIMessage} from "ai";
-import {createMessage} from "@/frontend/dexie/queries";
+import {createMessage, createThread, updateThread} from "@/frontend/dexie/queries";
 import { v4 as uuidv4 } from 'uuid';
 import {useAPIKeyStore} from "@/frontend/stores/APIKeyStore";
 import {useModelStore} from "@/frontend/stores/ModelStore";
@@ -67,42 +67,64 @@ const Chat = ({ threadId ,initialMessages } : ChatProps) => {
   const [isFirstMessage, setIsFirstMessage] = useState(true);
 
   const handleSubmitWithTitle = async (e: FormEvent) => {
-
-
-
-
     e.preventDefault();
 
     const currentInput = input.trim();
-
     if (!currentInput) return;
 
-    handleSubmit(e,{
-      body : {
-        model : selectedModel,
+    try {
+
+      await createThread({
+        id: threadId,
+        title: 'New Chat', // Temporary title
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: new Date()
+      });
+
+      // Submit the message
+      handleSubmit(e, {
+        body: {
+          model: selectedModel,
+        }
+      });
+
+      if (isFirstMessage) {
+        try {
+          const res = await fetch('/api/complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              [modelConfig.headerKey]: getKey(modelConfig.provider) || '',
+            },
+            body: JSON.stringify({
+              prompt: currentInput,
+              threadId: threadId,
+              messageId: crypto.randomUUID(),
+            }),
+          });
+
+          if (!res.ok) throw new Error('Failed to generate title');
+
+          const { title } = await res.json();
+          await updateThread(threadId, {
+            title,
+            updatedAt: new Date()
+          });
+
+        } catch (err) {
+          console.error('Error generating title:', err);
+          // Fallback to updating with input as title if title generation fails
+          await updateThread(threadId, {
+            title: currentInput.slice(0, 50), // Truncate long inputs
+            updatedAt: new Date()
+          });
+        } finally {
+          setIsFirstMessage(false);
+        }
       }
-    });
-
-    if (isFirstMessage) {
-      try {
-        const res = await fetch('/api/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: currentInput,
-            threadId: '1',
-            messageId: crypto.randomUUID(),
-          }),
-        });
-        const { title } = await res.json();
-        console.log('Generated title:', title);
-
-
-      } catch (err) {
-        console.error('Error generating title:', err);
-      } finally {
-        setIsFirstMessage(false);
-      }
+    } catch (error) {
+      console.error('Error handling message submission:', error);
     }
   };
 
