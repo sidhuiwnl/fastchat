@@ -1,5 +1,5 @@
 import Chat from "@/frontend/components/chat";
-import { useParams } from 'react-router';
+import { useParams, useLocation } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getMessagesByThreadId } from '../dexie/queries';
 import { type DBMessage } from '../dexie/db';
@@ -7,13 +7,10 @@ import { UIMessage } from 'ai';
 
 export default function Thread() {
     const { id } = useParams();
+    const location = useLocation();
     if (!id) throw new Error('Thread ID is required');
 
     const messages = useLiveQuery(() => getMessagesByThreadId(id), [id]);
-
-    console.log("db", messages);
-
-
 
     const convertToUIMessages = (messages?: DBMessage[]) => {
         return messages?.map((message) => ({
@@ -25,11 +22,25 @@ export default function Thread() {
         }));
     };
 
+    // If we have no messages, pass the initialMessage from navigation state
+    let initialMessages = convertToUIMessages(messages) || [];
+    if ((!messages || messages.length === 0) && location.state?.initialMessage) {
+        initialMessages = [
+            {
+                id: crypto.randomUUID(),
+                role: 'user',
+                parts: [location.state.initialMessage],
+                content: location.state.initialMessage,
+                createdAt: new Date(),
+            },
+        ];
+    }
+
     return (
         <Chat
             key={id}
             threadId={id}
-            initialMessages={convertToUIMessages(messages) || []}
+            initialMessages={initialMessages}
         />
     );
 }

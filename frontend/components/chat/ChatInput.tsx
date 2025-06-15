@@ -12,6 +12,8 @@ interface ChatInputProps {
   status: ChatStatus;
   selectedModel: string;
   onModelChange: (model: AIModel) => void;
+
+
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -20,10 +22,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                                handleSubmitWithTitle,
                                                status,
                                                selectedModel,
-                                               onModelChange
+                                               onModelChange,
+
                                              }) => {
+
+
   const [isModelDropdownOpen, setIsModelDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -39,11 +45,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
     };
   }, []);
 
+
+
+
+
   return (
       <div className="w-full pb-4 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-black/5 dark:bg-white/5 rounded-xl p-1.5">
-            <form onSubmit={handleSubmitWithTitle} className="relative flex flex-col backdrop-blur-xl">
+            <form onSubmit={ handleSubmitWithTitle} className="relative flex flex-col backdrop-blur-xl">
             <textarea
                 id="ai-input"
                 placeholder="What can I do for you?"
