@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react';
-import { FormEvent, useEffect } from 'react';
+import { FormEvent} from 'react';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import { useChatActions } from './useChatActions';
@@ -13,6 +13,7 @@ import { AIModel } from "@/lib/model";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useMessageSummary } from "@/hooks/useMessageSummary";
+
 
 interface ChatProps {
   threadId: string;
@@ -30,38 +31,32 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
 
   const { complete } = useMessageSummary();
 
-
-
-  const { messages, input, handleInputChange, handleSubmit, status, reload } = useChat({
+  const { messages, input, handleInputChange, status, reload,append } = useChat({
     api: "/api/chat",
-    initialMessages: initialMessages,
-
-
-    onResponse: (response) => {
-      console.log('API Response:', response);
-    },
+    initialMessages: initialMessages || [],
+    streamProtocol: "data",
+    id : threadId,
 
     onError: (error) => {
       console.error('Chat error:', error);
     },
 
     onFinish: async (message) => {
-      console.log('Chat finished with message:', message);
-
-
       const aiMessage: UIMessage = {
         id: message.id || uuidv4(),
         parts: message.parts as UIMessage['parts'],
-        role: "assistant",
+        role: 'assistant',
         content: message.content,
         createdAt: message.createdAt || new Date(),
       };
 
       try {
         await createMessage(threadId, aiMessage);
-        console.log('AI message saved to DB:', aiMessage);
+        await complete(input.trim(), {
+          body: { threadId, messageId : message.id, isTitle: true },
+        });
       } catch (error) {
-        console.error('Error saving AI message:', error);
+        console.error('Error in onFinish:', error);
       }
     },
 
@@ -73,9 +68,6 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
       model: selectedModel
     }
   });
-
-
-
 
   const {
     hoveredMessageId,
@@ -92,63 +84,59 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
   const handleSubmitWithTitle = async (e: FormEvent) => {
     e.preventDefault();
 
-
-    const messageId = uuidv4();
-
     const currentInput = input.trim();
-
-    const userMessage: UIMessage = {
-      id: messageId,
-      role: "user",
-      parts : [{ type : "text", text : currentInput}],
-      content: currentInput,
-      createdAt: new Date(),
-    };
-
-    // Save user message to DB
-    await createMessage(threadId, userMessage);
-
-    if (!id) {
-      navigate(`/chat/${threadId}`);
-      await createThread(threadId);
-      await complete(currentInput, {
-        body: { threadId, messageId, isTitle: true },
-      });
-    }
-
-
-
 
     if (!currentInput) {
       console.log('Empty input, returning early');
       return;
     }
 
-    try {
+    const isFirstMessage = !id;
 
-      handleSubmit(e, {
-        body: {
-          model: selectedModel,
-        }
-      });
+
+    if (isFirstMessage) {
+      try {
+        await createThread(threadId );
+        navigate(`/chat/${threadId}`, { replace: true });
+      } catch (error) {
+        console.error('Error creating thread:', error);
+        return;
+      }
+    }
+    const messageId = uuidv4();
+    const userMessage: UIMessage = {
+      id: messageId,
+      role: "user",
+      parts: [{ type: "text", text: currentInput }],
+      content: currentInput,
+      createdAt: new Date(),
+    };
+
+    await createMessage(threadId, userMessage);
+
+    try {
+        await append(userMessage, {
+          body: {
+            model: selectedModel,
+          },
+          headers: {
+            [modelConfig.headerKey]: getKey(modelConfig.provider) || '',
+          },
+        });
 
     } catch (error) {
       console.error('Error handling message submission:', error);
     }
   };
 
-  // Debug: Log the current status
-  console.log('Chat status:', status);
-  console.log('Selected model:', selectedModel);
+
 
   return (
       <div className="h-full w-full relative flex flex-col">
         <div className="flex-1 overflow-y-auto pb-[120px]">
           <div className="w-full max-w-4xl mx-auto pt-4 px-4">
-
-
             <MessageList
-                messages={messages || initialMessages || []}
+                messages={messages || initialMessages}
                 hoveredMessageId={hoveredMessageId}
                 setHoveredMessageId={setHoveredMessageId}
                 editingMessageId={editingMessageId}

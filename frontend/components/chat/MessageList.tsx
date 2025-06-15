@@ -17,7 +17,7 @@ interface MessageListProps {
   handleEdit: (messageId: string, content: string) => void;
   handleSaveEdit: (messageId: string) => void;
   reload: () => void;
-  status: ChatStatus;
+  status: ChatStatus | string
 }
 
 const MessageList: React.FC<MessageListProps> = ({

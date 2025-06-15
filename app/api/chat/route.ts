@@ -13,7 +13,12 @@ export async function POST(req: NextRequest) {
     try {
         const { messages,model } = await req.json();
 
-
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return new Response(
+              JSON.stringify({ error: 'No messages provided' }),
+              { status: 400, headers: { 'Content-Type': 'application/json' } }
+            );
+          }    
 
         const headerList = await headers();
 
