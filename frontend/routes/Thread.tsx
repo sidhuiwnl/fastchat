@@ -4,13 +4,19 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { getMessagesByThreadId } from '../dexie/queries';
 import { type DBMessage } from '../dexie/db';
 import { UIMessage } from 'ai';
+import {useUser} from "@clerk/nextjs";
 
 export default function Thread() {
+    const { user } = useUser();
+    const userId = user?.id as string;
+
+
+
     const { id } = useParams();
     const location = useLocation();
     if (!id) throw new Error('Thread ID is required');
 
-    const messages = useLiveQuery(() => getMessagesByThreadId(id), [id]);
+    const messages = useLiveQuery(() => getMessagesByThreadId(id,userId), [id]);
 
     const convertToUIMessages = (messages?: DBMessage[]) => {
         return messages?.map((message) => ({
@@ -41,6 +47,7 @@ export default function Thread() {
             key={id}
             threadId={id}
             initialMessages={initialMessages}
+            userId={userId}
         />
     );
 }

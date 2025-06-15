@@ -4,10 +4,12 @@ import Chat from "@/frontend/components/chat";
 import { v4 as uuidv4 } from 'uuid';
 import { useAPIKeyStore } from '../stores/APIKeyStore';
 import {useModelStore} from "@/frontend/stores/ModelStore";
-
+import {useUser} from "@clerk/nextjs";
 
 
 export default function Home() {
+    const { user } = useUser();
+    const userId = user?.id as string;
 
     const hasRequiredKeys = useAPIKeyStore((state) => state.hasRequiredKeys());
     const isAPIKeysHydrated = useAPIKeyStore.persist?.hasHydrated();
@@ -23,5 +25,5 @@ export default function Home() {
             </div>
         );
 
-    return <Chat threadId={uuidv4()} initialMessages={[]} />;
+    return <Chat userId={userId} threadId={uuidv4()} initialMessages={[]} />;
 }

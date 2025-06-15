@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -11,50 +11,45 @@ import {
 } from "@/frontend/components/ui/sidebar";
 import { getThreads, deleteThread } from "@/frontend/dexie/queries";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useCallback } from "react";
-import type {Thread} from "@/frontend/dexie/db";
+import type { Thread } from "@/frontend/dexie/db";
+import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
 
 export function AppSidebar() {
-    const threads  = useLiveQuery<Thread[]>(() => getThreads());
     const navigate = useNavigate();
+    const location = useLocation();
+    const { user } = useUser();
+    const userId = user?.id as string;
+    const threads = useLiveQuery<Thread[]>(() => getThreads(userId));
+    const currentThreadId = location.pathname.split('/chat/')[1];
 
     const groupThreadsByDate = useCallback(() => {
         if (!threads) return { today: [], yesterday: [], last30Days: [] };
 
         const now = new Date();
-        const today = new Date(now);
-        today.setHours(0, 0, 0, 0);
-
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const last30Days = new Date(today);
-        last30Days.setDate(last30Days.getDate() - 30);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const last30Days = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
         return {
-            today: threads.filter(thread =>
-                new Date(thread.lastMessageAt) >= today
-            ),
-            yesterday: threads.filter(thread =>
-                new Date(thread.lastMessageAt) >= yesterday &&
-                new Date(thread.lastMessageAt) < today
-            ),
-            last30Days: threads.filter(thread =>
-                new Date(thread.lastMessageAt) >= last30Days &&
-                new Date(thread.lastMessageAt) < yesterday
-            )
+            today: threads.filter(t => new Date(t.lastMessageAt) >= today),
+            yesterday: threads.filter(t => {
+                const date = new Date(t.lastMessageAt);
+                return date >= yesterday && date < today;
+            }),
+            last30Days: threads.filter(t => {
+                const date = new Date(t.lastMessageAt);
+                return date >= last30Days && date < yesterday;
+            })
         };
     }, [threads]);
-
-    const groupedThreads = groupThreadsByDate();
 
     const handleDeleteThread = async (e: React.MouseEvent, threadId: string) => {
         e.stopPropagation();
         e.preventDefault();
         try {
-            await deleteThread(threadId);
-            // If currently viewing this thread, navigate away
+            await deleteThread(userId, threadId);
             if (window.location.pathname.includes(threadId)) {
                 navigate('/chat');
             }
@@ -63,9 +58,46 @@ export function AppSidebar() {
         }
     };
 
+    const renderThreadGroup = (threads: Thread[], title: string) => {
+        if (threads.length === 0) return null;
+
+        return (
+            <>
+                <SidebarGroupLabel>{title}</SidebarGroupLabel>
+                <SidebarMenu className="flex flex-col space-y-2">
+                    {threads.map((thread) => (
+                        <SidebarMenuItem key={thread.id}>
+                            <SidebarMenuButton
+                                asChild
+                                onClick={() => navigate(`/chat/${thread.id}`)}
+                                className="w-full"
+                            >
+                                <div className={`group flex items-center justify-between gap-2 px-4 py-2 rounded-md w-full ${
+                                    currentThreadId === thread.id
+                                        ? "bg-gray-200 dark:bg-neutral-700"
+                                        : "hover:bg-gray-100 dark:hover:bg-neutral-800"
+                                }`}>
+                                    <span className="truncate flex-1">{thread.title}</span>
+                                    <button
+                                        onClick={(e) => handleDeleteThread(e, thread.id)}
+                                        className="transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 text-white p-1 rounded-sm hover:bg-neutral-600 dark:hover:bg-neutral-600 transition-all duration-200 ease-out"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </>
+        );
+    };
+
+    const groupedThreads = groupThreadsByDate();
+
     return (
         <Sidebar>
-            <SidebarContent>
+            <SidebarContent className="p-2">
                 <SidebarGroup>
                     <SidebarGroupLabel>FashChat</SidebarGroupLabel>
 
@@ -80,86 +112,19 @@ export function AppSidebar() {
                     </SidebarMenuButton>
 
                     <SidebarGroupContent>
-                        {groupedThreads.today.length > 0 && (
-                            <>
-                                <SidebarGroupLabel>Today</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    {groupedThreads.today.map((thread) => (
-                                        <SidebarMenuItem key={thread.id}>
-                                            <SidebarMenuButton
-                                                asChild
-                                                onClick={() => navigate(`/chat/${thread.id}`)}
-                                            >
-                                                <div className="flex items-center justify-between gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md w-full">
-                                                    <span className="truncate flex-1">{thread.title}</span>
-                                                    <button
-                                                        onClick={(e) => handleDeleteThread(e, thread.id)}
-                                                        className="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    ))}
-                                </SidebarMenu>
-                            </>
-                        )}
-
-                        {groupedThreads.yesterday.length > 0 && (
-                            <>
-                                <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    {groupedThreads.yesterday.map((thread) => (
-                                        <SidebarMenuItem key={thread.id}>
-                                            <SidebarMenuButton
-                                                asChild
-                                                onClick={() => navigate(`/chat/${thread.id}`)}
-                                            >
-                                                <div className="flex items-center justify-between gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md w-full">
-                                                    <span className="truncate flex-1">{thread.title}</span>
-                                                    <button
-                                                        onClick={(e) => handleDeleteThread(e, thread.id)}
-                                                        className="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    ))}
-                                </SidebarMenu>
-                            </>
-                        )}
-
-                        {groupedThreads.last30Days.length > 0 && (
-                            <>
-                                <SidebarGroupLabel>Last 30 Days</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    {groupedThreads.last30Days.map((thread) => (
-                                        <SidebarMenuItem key={thread.id}>
-                                            <SidebarMenuButton
-                                                asChild
-                                                onClick={() => navigate(`/chat/${thread.id}`)}
-                                            >
-                                                <div className="flex items-center justify-between gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md w-full">
-                                                    <span className="truncate flex-1">{thread.title}</span>
-                                                    <button
-                                                        onClick={(e) => handleDeleteThread(e, thread.id)}
-                                                        className="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    ))}
-                                </SidebarMenu>
-                            </>
-                        )}
+                        {renderThreadGroup(groupedThreads.today, "Today")}
+                        {renderThreadGroup(groupedThreads.yesterday, "Yesterday")}
+                        {renderThreadGroup(groupedThreads.last30Days, "Last 30 Days")}
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+
+            <SignedIn>
+                <div className="p-4 border-t flex items-center gap-3">
+                    <UserButton />
+                    <h1>{user?.fullName}</h1>
+                </div>
+            </SignedIn>
         </Sidebar>
     );
 }

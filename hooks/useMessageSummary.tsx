@@ -10,7 +10,7 @@ interface MessageSummaryPayload {
     threadId: string;
 }
 
-export const useMessageSummary = () => {
+export const useMessageSummary = (userId : string) => {
     const getKey = useAPIKeyStore((state) => state.getKey);
 
     const { complete, isLoading } = useCompletion({
@@ -26,10 +26,10 @@ export const useMessageSummary = () => {
                     const { title, isTitle, messageId, threadId } = payload;
 
                     if (isTitle) {
-                        await updateThread(threadId, title);
-                        await createMessageSummary(threadId, messageId, title);
+                        await updateThread(userId,threadId, title);
+                        await createMessageSummary(threadId, messageId, title,userId);
                     } else {
-                        await createMessageSummary(threadId, messageId, title);
+                        await createMessageSummary(threadId, messageId, title,userId);
                     }
                 } else {
                     toast.error('Failed to generate a summary for the message');

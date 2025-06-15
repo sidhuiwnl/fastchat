@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {AI_MODELS} from "@/lib/model";
+import {toast} from "sonner";
+
 
 export function useChatActions() {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
@@ -8,18 +10,21 @@ export function useChatActions() {
   const[selectedModel, setSelectedModel] = useState<string>(AI_MODELS[3]);
 
   const handleCopy = (text: string) => {
+
     navigator.clipboard.writeText(text);
-    // Optionally add a toast notification here
+    toast.success("Copied!");
   };
 
   const handleEdit = (messageId: string, content: string) => {
     setEditingMessageId(messageId);
     setEditedContent(content);
+
   };
 
   const handleSaveEdit = (messageId: string) => {
     // Implement your edit save logic here
     console.log("Saved edit for message:", messageId, editedContent);
+
     setEditingMessageId(null);
     // Optionally update the message in your chat state here
   };

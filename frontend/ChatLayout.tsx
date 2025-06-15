@@ -4,6 +4,7 @@
 import {SidebarProvider,SidebarTrigger} from "./components/ui/sidebar";
 import {AppSidebar} from "./components/app-sidebar";
 import {Outlet} from "react-router";
+import {Toaster} from "@/frontend/components/ui/sonner";
 
 export default function ChatLayout() {
     return (
@@ -17,6 +18,7 @@ export default function ChatLayout() {
                     </main>
                 </div>
             </SidebarProvider>
+            <Toaster />
         </div>
     );
 }

@@ -4,7 +4,10 @@ import Index from "@/frontend/routes/Index";
 import Home from "@/frontend/routes/Home";
 import Thread from "@/frontend/routes/Thread";
 
+
+
 export  default function App(){
+    
     return (
         <BrowserRouter>
             <Routes>

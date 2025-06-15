@@ -5,6 +5,7 @@ import BouncingDots from '../bouncing-dot';
 import { Copy, RefreshCw, Edit } from 'lucide-react';
 import { UIMessage } from 'ai';
 
+
 interface MessageListProps {
   messages: UIMessage[];
   hoveredMessageId: string | null;
@@ -86,32 +87,33 @@ const MessageList: React.FC<MessageListProps> = ({
                     </>
                 )}
               </div>
-              {message.role === 'user' && hoveredMessageId === message.id && editingMessageId !== message.id && (
+                {hoveredMessageId === message.id &&
+                    editingMessageId !== message.id && (
                   <div
                       className="absolute  flex justify-center space-x-2 pt-2 z-10"
                       style={{ top: '100%' }}
                   >
                     <button
                         onClick={() => handleCopy(message.content || "")}
-                        className="p-1 "
+                        className="cursor-pointer hover:bg-neutral-800 rounded-md p-2 "
                         title="Copy"
                     >
                       <Copy className="w-4 h-4 " />
                     </button>
                     <button
                         onClick={() => reload()}
-                        className="p-1  "
+                        className="cursor-pointer hover:bg-neutral-800 rounded-md p-2"
                         title="Regenerate"
                     >
                       <RefreshCw className="w-4 h-4 " />
                     </button>
-                    <button
-                        onClick={() => handleEdit(message.id, message.content || "")}
-                        className="p-1 "
-                        title="Edit"
-                    >
-                      <Edit className="w-4 h-4 " />
-                    </button>
+                      {message.role === "user" && (
+                          <button
+                              onClick={() => handleEdit(message.id, message.content)}
+                              className="cursor-pointer hover:bg-neutral-800 rounded-md p-2">
+                              <Edit className="w-4 h-4" />
+                          </button>
+                      )}
                   </div>
               )}
             </div>

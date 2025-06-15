@@ -18,9 +18,10 @@ import { useMessageSummary } from "@/hooks/useMessageSummary";
 interface ChatProps {
   threadId: string;
   initialMessages?: UIMessage[];
+  userId: string;
 }
 
-const Chat = ({ threadId, initialMessages }: ChatProps) => {
+const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getKey } = useAPIKeyStore();
@@ -29,7 +30,7 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
   const modelConfig = useModelStore((state) => state.getModelConfig());
   const setSelectedModel = useModelStore((state) => state.setModel);
 
-  const { complete } = useMessageSummary();
+  const { complete } = useMessageSummary(userId);
 
   const { messages, input, handleInputChange, status, reload,append } = useChat({
     api: "/api/chat",
@@ -51,7 +52,7 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
       };
 
       try {
-        await createMessage(threadId, aiMessage);
+        await createMessage(threadId,userId,aiMessage);
         await complete(input.trim(), {
           body: { threadId, messageId : message.id, isTitle: true },
         });
@@ -96,7 +97,7 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
 
     if (isFirstMessage) {
       try {
-        await createThread(threadId );
+        await createThread(userId,threadId );
         navigate(`/chat/${threadId}`, { replace: true });
       } catch (error) {
         console.error('Error creating thread:', error);
@@ -112,7 +113,7 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
       createdAt: new Date(),
     };
 
-    await createMessage(threadId, userMessage);
+    await createMessage(threadId,userId,userMessage);
 
     try {
         await append(userMessage, {
@@ -158,6 +159,7 @@ const Chat = ({ threadId, initialMessages }: ChatProps) => {
             status={status as ChatStatus}
             onModelChange={(model: AIModel) => setSelectedModel(model)}
             selectedModel={selectedModel}
+
         />
       </div>
   );

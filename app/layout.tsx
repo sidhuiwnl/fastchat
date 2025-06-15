@@ -3,7 +3,7 @@ import { DM_Sans,Geist } from "next/font/google";
 import "./globals.css";
 import {ThemeProvider} from "@/frontend/components/theme-provider";
 import 'katex/dist/katex.min.css';
-
+import { ClerkProvider } from "@clerk/nextjs";
 
 
 const dm_sans = DM_Sans({
@@ -27,26 +27,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html 
-    lang="en"
-    suppressHydrationWarning
-    >
-
-      <body
-        className={` ${geistSans.variable} ${dm_sans.className}  antialiased`}
+    <ClerkProvider>
+      <html 
+      lang="en"
+      suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
+
+        <body
+          className={` ${geistSans.variable} ${dm_sans.className}  antialiased`}
         >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            
+              {children}
+            
+          </ThemeProvider>
           
-            {children}
-          
-        </ThemeProvider>
-        
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
