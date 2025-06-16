@@ -8,7 +8,7 @@ import {Toaster} from "@/frontend/components/ui/sonner";
 
 export default function ChatLayout() {
     return (
-        <div className="w-screen h-screen flex overflow-hidden">
+        <div className="w-screen h-screen  flex overflow-hidden">
             <SidebarProvider>
                 <AppSidebar />
                 <div className="flex-1 h-full flex flex-col">

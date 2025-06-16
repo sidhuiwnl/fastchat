@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAPIKeyStore } from '../stores/APIKeyStore';
 import {useModelStore} from "@/frontend/stores/ModelStore";
 import {useUser} from "@clerk/nextjs";
+import HomeTemplate from "@/frontend/components/HomeTemplate";
 
 
 export default function Home() {
@@ -25,5 +26,11 @@ export default function Home() {
             </div>
         );
 
-    return <Chat userId={userId} threadId={uuidv4()} initialMessages={[]} />;
+    return (
+        <div className="flex flex-col items-center justify-center w-full h-full ">
+            <HomeTemplate/>
+            <Chat userId={userId} threadId={uuidv4()} initialMessages={[]} />
+        </div>
+
+    );
 }

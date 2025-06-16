@@ -7,7 +7,7 @@ import {headers} from "next/headers";
 import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 30;
-export const runtime = 'edge';
+
 
 export async function POST(req: NextRequest) {
     try {

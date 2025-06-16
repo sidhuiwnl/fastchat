@@ -15,6 +15,7 @@ import { useNavigate } from "react-router";
 import { useMessageSummary } from "@/hooks/useMessageSummary";
 
 
+
 interface ChatProps {
   threadId: string;
   initialMessages?: UIMessage[];
@@ -26,13 +27,14 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const { id } = useParams();
   const { getKey } = useAPIKeyStore();
 
+
   const selectedModel = useModelStore((state) => state.selectedModel);
   const modelConfig = useModelStore((state) => state.getModelConfig());
   const setSelectedModel = useModelStore((state) => state.setModel);
 
   const { complete } = useMessageSummary(userId);
 
-  const { messages, input, handleInputChange, status, reload,append } = useChat({
+  const { messages, input, handleInputChange, status, reload,append,setInput } = useChat({
     api: "/api/chat",
     initialMessages: initialMessages || [],
     streamProtocol: "data",
@@ -85,6 +87,8 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const handleSubmitWithTitle = async (e: FormEvent) => {
     e.preventDefault();
 
+  setInput("")
+
     const currentInput = input.trim();
 
     if (!currentInput) {
@@ -135,7 +139,9 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   return (
       <div className="h-full w-full relative flex flex-col">
         <div className="flex-1 overflow-y-auto pb-[120px]">
+
           <div className="w-full max-w-4xl mx-auto pt-4 px-4">
+
             <MessageList
                 messages={messages || initialMessages}
                 hoveredMessageId={hoveredMessageId}
@@ -152,6 +158,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
             />
           </div>
         </div>
+
         <ChatInput
             input={input}
             handleInputChange={handleInputChange}

@@ -50,7 +50,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   className={
                     message.role === 'user'
                         ? "px-4 py-2 rounded-lg inline-block w-fit max-w-[80%] bg-neutral-300"
-                        : "max-w-[80%] mt-1 pb-20"
+                        : "max-w-[80%] mt-1 pb-5"
                   }
               >
                 {editingMessageId === message.id ? (
