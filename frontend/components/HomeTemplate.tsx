@@ -64,7 +64,9 @@ export default function Component() {
         if (hour < 18) return "Good afternoon"
         return "Good evening"
     }
-    const greeting = `${getTimeBasedGreeting()}, ${username}`
+
+
+    const greeting = `${getTimeBasedGreeting()}, ${username ?? "there"}`
 
 
     const handleSectionClick = (section: string) => {

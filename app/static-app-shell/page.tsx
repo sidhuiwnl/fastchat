@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useUser, RedirectToSignIn } from "@clerk/nextjs";
 import { Card } from "@/frontend/components/ui/card";
+import {useGuestChatLimit} from "@/hooks/useGuestChatLimit";
 
 const App = dynamic(() => import("@/frontend/page"), {
     ssr: false,
@@ -10,6 +11,7 @@ const App = dynamic(() => import("@/frontend/page"), {
 
 
 function LoadingCard() {
+
     return (
         <Card className="w-screen h-screen flex items-center justify-center p-6">
             <div className="flex items-center gap-3">
@@ -24,13 +26,16 @@ function LoadingCard() {
 }
 
 export default function HomePage() {
+    const { hasReachedLimit } = useGuestChatLimit()
+
+
     const { isLoaded, isSignedIn } = useUser();
 
     if (!isLoaded) {
         return <LoadingCard />;
     }
 
-    if (!isSignedIn) {
+    if (!isSignedIn && hasReachedLimit) {
         return <RedirectToSignIn />;
     }
 

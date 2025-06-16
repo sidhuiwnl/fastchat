@@ -1,4 +1,4 @@
-import { Plus, Trash2, X } from "lucide-react";
+import {LogOut, Plus, X} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -14,14 +14,25 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useNavigate, useLocation } from "react-router";
 import { useCallback } from "react";
 import type { Thread } from "@/frontend/dexie/db";
-import { SignedIn, UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser,SignInButton} from "@clerk/nextjs";
+
 
 export function AppSidebar() {
     const navigate = useNavigate();
+
     const location = useLocation();
-    const { user } = useUser();
-    const userId = user?.id as string;
-    const threads = useLiveQuery<Thread[]>(() => getThreads(userId));
+
+    const { user,isLoaded } = useUser();
+
+    const userId = isLoaded && user ? user.id : undefined;
+
+    const threads = useLiveQuery<Thread[]>(() => {
+        if (!userId) return [];
+        return getThreads(userId);
+    }, [userId]);
+
+
+
     const currentThreadId = location.pathname.split('/chat/')[1];
 
     const groupThreadsByDate = useCallback(() => {
@@ -49,7 +60,7 @@ export function AppSidebar() {
         e.stopPropagation();
         e.preventDefault();
         try {
-            await deleteThread(userId, threadId);
+            await deleteThread(userId as string, threadId);
             if (window.location.pathname.includes(threadId)) {
                 navigate('/chat');
             }
@@ -125,6 +136,12 @@ export function AppSidebar() {
                     <h1>{user?.fullName}</h1>
                 </div>
             </SignedIn>
+            <SignedOut >
+                <div className="p-4 border-t flex justify-center  cursor-pointer  items-center gap-1">
+                    <LogOut className="w-4 h-4" />
+                    <SignInButton forceRedirectUrl={"/chat"}   />
+                </div>
+            </SignedOut>
         </Sidebar>
     );
 }

@@ -13,7 +13,10 @@ import { AIModel } from "@/lib/model";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useMessageSummary } from "@/hooks/useMessageSummary";
-
+import {useGuestChatLimit} from "@/hooks/useGuestChatLimit";
+import {useUser,SignInButton} from "@clerk/nextjs";
+import {toast} from "sonner";
+import {Button} from "@/frontend/components/ui/button";
 
 
 interface ChatProps {
@@ -26,7 +29,13 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getKey } = useAPIKeyStore();
-
+  const {
+    hasReachedLimit,
+    incrementGuestChatCount,
+    remainingMessages,
+    guestChatLimit
+  } = useGuestChatLimit();
+  const { isSignedIn } = useUser();
 
   const selectedModel = useModelStore((state) => state.selectedModel);
   const modelConfig = useModelStore((state) => state.getModelConfig());
@@ -55,9 +64,13 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
 
       try {
         await createMessage(threadId,userId,aiMessage);
-        await complete(input.trim(), {
-          body: { threadId, messageId : message.id, isTitle: true },
-        });
+        const isFirst = !id
+        if(isFirst){
+          await complete(input.trim(), {
+            body: { threadId, messageId : message.id, isTitle: true },
+          });
+        }
+
       } catch (error) {
         console.error('Error in onFinish:', error);
       }
@@ -87,7 +100,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const handleSubmitWithTitle = async (e: FormEvent) => {
     e.preventDefault();
 
-  setInput("")
+
 
     const currentInput = input.trim();
 
@@ -95,6 +108,21 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
       console.log('Empty input, returning early');
       return;
     }
+    if (!isSignedIn && hasReachedLimit) {
+      toast.error(`Guest limit reached. Please sign in to continue chatting.`);
+      return;
+    }
+
+    if (!isSignedIn) {
+      incrementGuestChatCount();
+      if (remainingMessages === 1) {
+        toast.info(`You have 1 message remaining. Please sign in to continue.`);
+      } else if (remainingMessages <= 3) {
+        toast.info(`You have ${remainingMessages} messages remaining as a guest.`);
+      }
+    }
+
+    setInput("")
 
     const isFirstMessage = !id;
 
@@ -134,6 +162,27 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     }
   };
 
+  if (!isSignedIn && hasReachedLimit) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+          <div className="max-w-md space-y-4">
+            <h2 className="text-2xl font-bold">Guest Limit Reached</h2>
+            <p className="text-muted-foreground">
+              You've used all {guestChatLimit} free messages. Sign up or sign in to continue chatting.
+            </p>
+            <div className="flex gap-4 justify-center pt-4">
+              <SignInButton mode="modal">
+                <Button variant="default">Sign In</Button>
+              </SignInButton>
+              <SignInButton mode="modal" signUpForceRedirectUrl="/chat">
+                <Button variant="outline">Create Account</Button>
+              </SignInButton>
+            </div>
+          </div>
+        </div>
+    );
+  }
+
 
 
   return (
@@ -159,15 +208,21 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
           </div>
         </div>
 
-        <ChatInput
-            input={input}
-            handleInputChange={handleInputChange}
-            handleSubmitWithTitle={handleSubmitWithTitle}
-            status={status as ChatStatus}
-            onModelChange={(model: AIModel) => setSelectedModel(model)}
-            selectedModel={selectedModel}
-
-        />
+        <div className=" p-4">
+          {!isSignedIn && (
+              <div className="text-center text-sm text-muted-foreground mb-2">
+                Guest mode: {remainingMessages} of {guestChatLimit} messages remaining
+              </div>
+          )}
+          <ChatInput
+              input={input}
+              handleInputChange={handleInputChange}
+              handleSubmitWithTitle={handleSubmitWithTitle}
+              status={status as ChatStatus}
+              onModelChange={setSelectedModel}
+              selectedModel={selectedModel}
+          />
+        </div>
       </div>
   );
 };

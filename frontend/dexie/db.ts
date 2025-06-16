@@ -3,7 +3,7 @@ import Dexie, { type EntityTable } from 'dexie';
 
 interface Thread {
     id: string;
-    userId : string;
+    userId? : string;
     title: string;
     createdAt: Date;
     updatedAt: Date;
@@ -12,7 +12,7 @@ interface Thread {
 
 interface DBMessage {
     id: string;
-    userId: string;
+    userId?: string;
     threadId: string;
     parts: UIMessage['parts'];
     content: string;
@@ -23,7 +23,7 @@ interface DBMessage {
 interface MessageSummary {
     id: string;
     threadId: string;
-    userId: string;
+    userId?: string;
     messageId: string;
     content: string;
     createdAt: Date;
