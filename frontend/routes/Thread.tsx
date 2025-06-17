@@ -18,9 +18,9 @@ export default function Thread() {
 
     if (!id) throw new Error('Thread ID is required');
 
-    const messages = useLiveQuery(() => getMessagesByThreadId(userId,id), [id]);
+    const messages = useLiveQuery(() => getMessagesByThreadId(id,userId,), [id]);
 
-
+    console.log(messages);
 
 
     const convertToUIMessages = (messages?: DBMessage[]) => {

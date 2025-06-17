@@ -55,7 +55,6 @@ export default function Home() {
                 userId={userId}
                 threadId={uuidv4()}
                 initialMessages={[]}
-
             />
         </div>
     );
