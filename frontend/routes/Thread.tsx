@@ -13,10 +13,15 @@ export default function Thread() {
 
 
     const { id } = useParams();
+
     const location = useLocation();
+
     if (!id) throw new Error('Thread ID is required');
 
-    const messages = useLiveQuery(() => getMessagesByThreadId(id,userId), [id]);
+    const messages = useLiveQuery(() => getMessagesByThreadId(userId,id), [id]);
+
+
+
 
     const convertToUIMessages = (messages?: DBMessage[]) => {
         return messages?.map((message) => ({

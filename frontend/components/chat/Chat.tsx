@@ -43,7 +43,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
 
   const { complete } = useMessageSummary(userId);
 
-  const { messages, input, handleInputChange, status, reload,append,setInput } = useChat({
+  const { messages, input, handleInputChange, status, reload,append,setInput,stop } = useChat({
     api: "/api/chat",
     initialMessages: initialMessages || [],
     streamProtocol: "data",
@@ -221,6 +221,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
               status={status as ChatStatus}
               onModelChange={setSelectedModel}
               selectedModel={selectedModel}
+              stop={stop}
           />
         </div>
       </div>

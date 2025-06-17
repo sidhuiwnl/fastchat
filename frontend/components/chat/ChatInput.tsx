@@ -1,9 +1,10 @@
 import { useEffect, memo, FC, useState, useRef ,ChangeEvent,FormEvent} from "react";
 import { ChatStatus } from './types';
-import { Paperclip, ArrowRight, ChevronDown, Search } from 'lucide-react';
+import { Paperclip, ArrowRight, ChevronDown, Search,Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AI_MODELS, AIModel } from "@/lib/model";
 import { useSelectedItem,useMenuStore } from "@/frontend/stores/PromptStore";
+
 
 interface ChatInputProps {
     input: string;
@@ -12,6 +13,7 @@ interface ChatInputProps {
     status: ChatStatus;
     selectedModel: string;
     onModelChange: (model: AIModel) => void;
+    stop : () => void;
 }
 
 // eslint-disable-next-line react/display-name
@@ -22,6 +24,7 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                                 status,
                                                 selectedModel,
                                                 onModelChange,
+                                                stop
                                             }) => {
     const modelInput = useSelectedItem();
     const [hasUserTyped, setHasUserTyped] = useState(false);
@@ -160,24 +163,34 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="text-xs text-black/40 dark:text-white/40">
-                                        {status === 'streaming' ? 'Generating...' : '\u00A0'}
-                                    </div>
                                     <button
-                                        type="submit"
+                                        type={status === "streaming" ? "button" : "submit"}
+                                        onClick={(e) => {
+                                            if (status === "streaming") {
+                                                e.preventDefault();
+                                                stop(); // Stop the streaming response
+                                            }
+                                        }}
                                         className={cn(
                                             "rounded-lg p-2 bg-black/5 dark:bg-white/5",
                                             "hover:bg-black/10 dark:hover:bg-white/10",
+                                            (!displayValue.trim() && status !== "streaming") && "cursor-not-allowed"
                                         )}
-                                        aria-label="Send message"
-                                        disabled={!displayValue.trim() || status === "streaming"}
+                                        aria-label={status === "streaming" ? "Stop generating" : "Send message"}
+                                        disabled={!displayValue.trim() && status !== "streaming"}
                                     >
-                                        <ArrowRight
-                                            className={cn(
-                                                "w-4 h-4 dark:text-white",
-                                                !displayValue.trim() ? "opacity-30" : "opacity-100",
-                                            )}
-                                        />
+                                        {status === "streaming" ? (
+                                            <Square
+                                                className="w-4 h-4 dark:text-white opacity-100"
+                                            />
+                                        ) : (
+                                            <ArrowRight
+                                                className={cn(
+                                                    "w-4 h-4 dark:text-white",
+                                                    !displayValue.trim() ? "opacity-30" : "opacity-100"
+                                                )}
+                                            />
+                                        )}
                                     </button>
                                 </div>
                             </div>
