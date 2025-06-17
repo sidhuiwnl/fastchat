@@ -39,6 +39,7 @@ db.version(2).stores({
     threads: 'id, userId, title, updatedAt, lastMessageAt, [userId+lastMessageAt]',
     messages: 'id, userId,threadId, createdAt, [userId+threadId]',
     messageSummaries: 'id, userId,threadId, messageId, createdAt, [threadId+createdAt]',
+
 });
 
 export type { Thread, DBMessage };

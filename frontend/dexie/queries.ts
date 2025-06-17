@@ -75,8 +75,6 @@ export const deleteAllThreads = async () => {
 };
 
 export const getMessagesByThreadId = async (userId : string | undefined, threadId : string) => {
-    console.log("getMessagesByThreadId - userId", userId);
-    console.log("getMessagesByThreadId - threadId", threadId);
 
     if (userId) {
         return await db.messages
@@ -182,3 +180,30 @@ export const getMessageSummaries = async (threadId : string, userId : string | u
 
     }
 };
+
+export const updateMessage = async (userId: string | undefined, threadId: string, messageId: string, content: string) => {
+    console.log("userId ", userId);
+    console.log("threadId ", threadId);
+    console.log("content ", content);
+    console.log("messageId ", messageId);
+
+    try {
+        if (userId) {
+            await db.messages.update(messageId, {
+                content,
+                parts: [{ type: "text", text: content }]
+            });
+        } else {
+            await db.messages
+                .where({ id: messageId, threadId })
+                .modify({
+                    content,
+                    parts: [{ type: "text", text: content }]
+                });
+        }
+        return true; // Return true for both cases
+    } catch (error) {
+        console.error('Error updating message:', error);
+        throw error;
+    }
+}

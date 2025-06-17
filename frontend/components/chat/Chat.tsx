@@ -27,14 +27,18 @@ interface ChatProps {
 
 const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
   const navigate = useNavigate();
+
   const { id } = useParams();
+
   const { getKey } = useAPIKeyStore();
+
   const {
     hasReachedLimit,
     incrementGuestChatCount,
     remainingMessages,
     guestChatLimit
   } = useGuestChatLimit();
+
   const { isSignedIn } = useUser();
 
   const selectedModel = useModelStore((state) => state.selectedModel);
@@ -43,7 +47,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
 
   const { complete } = useMessageSummary(userId);
 
-  const { messages, input, handleInputChange, status, reload,append,setInput,stop } = useChat({
+  const { messages, input, handleInputChange, status, reload,append,setInput,stop,setMessages } = useChat({
     api: "/api/chat",
     initialMessages: initialMessages || [],
     streamProtocol: "data",
@@ -97,9 +101,10 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     handleSaveEdit,
   } = useChatActions();
 
+
+
   const handleSubmitWithTitle = async (e: FormEvent) => {
     e.preventDefault();
-
 
 
     const currentInput = input.trim();
@@ -183,7 +188,14 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     );
   }
 
+  const handleSaveMessageEdit = async (messageId: string) => {
+    const success = await handleSaveEdit(userId, threadId, messageId);
 
+    if (success) {
+
+      await reload()
+    }
+  };
 
   return (
       <div className="h-full w-full relative flex flex-col">
@@ -201,7 +213,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
                 setEditedContent={setEditedContent}
                 handleCopy={handleCopy}
                 handleEdit={handleEdit}
-                handleSaveEdit={handleSaveEdit}
+                handleSaveEdit={handleSaveMessageEdit}
                 reload={reload}
                 status={status as ChatStatus}
             />

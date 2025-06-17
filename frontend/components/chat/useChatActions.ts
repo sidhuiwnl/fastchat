@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import {AI_MODELS} from "@/lib/model";
 import {toast} from "sonner";
-
+import {updateMessage} from "@/frontend/dexie/queries";
 
 export function useChatActions() {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
-  const[selectedModel, setSelectedModel] = useState<string>(AI_MODELS[3]);
+  const [selectedModel, setSelectedModel] = useState<string>(AI_MODELS[3]);
 
   const handleCopy = (text: string) => {
-
     navigator.clipboard.writeText(text);
     toast.success("Copied!");
   };
@@ -18,18 +17,26 @@ export function useChatActions() {
   const handleEdit = (messageId: string, content: string) => {
     setEditingMessageId(messageId);
     setEditedContent(content);
-
   };
 
-  const handleSaveEdit = (messageId: string) => {
-    // Implement your edit save logic here
-    console.log("Saved edit for message:", messageId, editedContent);
+  const handleSaveEdit = async (userId: string | undefined, threadId: string, messageId: string) => {
+    try {
+      if (!editedContent.trim()) {
+        toast.error("Message cannot be empty");
+        return false;
+      }
 
-    setEditingMessageId(null);
-    // Optionally update the message in your chat state here
+      await updateMessage(userId, threadId, messageId, editedContent);
+      setEditingMessageId(null);
+      setEditedContent("")
+      toast.success("Message updated");
+      return true;
+    } catch (error) {
+      console.error('Error updating message:', error);
+      toast.error("Failed to update message");
+      return false;
+    }
   };
-
-
 
   return {
     hoveredMessageId,
@@ -41,7 +48,7 @@ export function useChatActions() {
     handleCopy,
     handleEdit,
     handleSaveEdit,
-        selectedModel,
-        setSelectedModel,
+    selectedModel,
+    setSelectedModel,
   };
-} 
+}
