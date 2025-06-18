@@ -146,7 +146,7 @@ export function AppSidebar() {
             <SignedOut >
                 <div className="p-4 border-t flex justify-center  cursor-pointer  items-center gap-1">
                     <LogOut className="w-4 h-4" />
-                    <SignInButton forceRedirectUrl={"/chat"}   />
+                    <SignInButton   forceRedirectUrl={"/chat"}   />
                 </div>
             </SignedOut>
         </Sidebar>

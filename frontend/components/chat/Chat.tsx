@@ -53,7 +53,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     id : threadId,
 
     onError: (error) => {
-      console.error('Chat error:', error);
+      toast.error(error.message);
     },
 
     onFinish: async (message) => {
