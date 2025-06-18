@@ -39,7 +39,7 @@ export function useGuestChatLimit(): GuestChatLimit {
             const newCount = prevCount + 1;
             localStorage.setItem(GUEST_CHAT_COUNT_KEY, newCount.toString());
 
-            if (newCount >= GUEST_CHAT_LIMIT) {
+            if (newCount > GUEST_CHAT_LIMIT) {
                 setHasReachedLimit(true);
             }
 

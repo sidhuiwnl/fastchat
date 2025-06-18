@@ -1,7 +1,7 @@
 import { db } from './db';
 import { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
-import Dexie from 'dexie';
+import {DBMessage} from "./db";
 
 export const getThreads = async (userId : string | undefined) => {
     if (userId) {
@@ -92,32 +92,31 @@ export const getMessagesByThreadId = async (userId : string | undefined, threadI
 
 
 
-export const createMessage = async (userId : string | undefined, threadId : string, message : UIMessage) => {
-    const messageId = uuidv4();
+export const createMessage = async (threadId: string, message: UIMessage, userId?: string) => {
+    return await db.transaction('rw', [db.messages, db.threads], async () => {
 
-    await db.messages.add({
-        id: messageId,
-        threadId,
-        userId,
-        parts: message.parts,
-        content: message.content,
-        role: message.role,
-        createdAt: new Date()
+        const newMessage: DBMessage = {
+            id: message.id,
+            threadId,
+            parts: message.parts,
+            role: message.role,
+            content: message.content,
+            createdAt: message.createdAt ?? new Date()
+        };
+
+
+        if (userId) {
+            newMessage.userId = userId;
+        }
+
+        await db.messages.add(newMessage);
+
+        await db.threads.update(threadId, {
+            lastMessageAt: message.createdAt ?? new Date()
+        });
     });
-
-    // Update thread's last message timestamp
-    if (userId) {
-        await db.threads
-            .where({ id: threadId, userId })
-            .modify({ lastMessageAt: new Date(), updatedAt: new Date() });
-    } else {
-        await db.threads
-            .where({ id: threadId })
-            .modify({ lastMessageAt: new Date(), updatedAt: new Date() });
-    }
-
-    return messageId;
 };
+
 
 // export const deleteTrailingMessages = async (
 //     threadId: string,
@@ -181,29 +180,47 @@ export const getMessageSummaries = async (threadId : string, userId : string | u
     }
 };
 
-export const updateMessage = async (userId: string | undefined, threadId: string, messageId: string, content: string) => {
-    console.log("userId ", userId);
-    console.log("threadId ", threadId);
-    console.log("content ", content);
-    console.log("messageId ", messageId);
 
-    try {
-        if (userId) {
-            await db.messages.update(messageId, {
-                content,
-                parts: [{ type: "text", text: content }]
-            });
-        } else {
-            await db.messages
-                .where({ id: messageId, threadId })
-                .modify({
-                    content,
-                    parts: [{ type: "text", text: content }]
-                });
-        }
-        return true; // Return true for both cases
-    } catch (error) {
-        console.error('Error updating message:', error);
-        throw error;
-    }
-}
+
+// export const updateMessage = async (
+//     userId: string | undefined,
+//     threadId: string,
+//     messageId: string,
+//     content: string
+// ) => {
+//     console.log("userId:", userId);
+//     console.log("threadId:", threadId);
+//     console.log("messageId:", messageId);
+//     console.log("content:", content);
+//
+//     try {
+//         const message = await db.messages
+//             .where({ id: messageId, threadId })
+//             .first();
+//
+//         if (!message) {
+//             console.error("Message not found.");
+//             return false;
+//         }
+//
+//         if (userId && message.userId !== userId) {
+//             console.error("Not authorized to edit this message.");
+//             return false;
+//         }
+//
+//         const updatedCount = await db.messages.update(messageId, {
+//             content,
+//             parts: [{ type: "text", text: content }],
+//         });
+//
+//         if (updatedCount === 0) {
+//             console.warn("Message update failed.");
+//             return false;
+//         }
+//
+//         return true;
+//     } catch (error) {
+//         console.error("Error updating message.", error);
+//         throw error;
+//     }
+// };

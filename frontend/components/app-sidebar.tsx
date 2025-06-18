@@ -1,4 +1,4 @@
-import {LogOut, Plus, X} from "lucide-react";
+import {LogOut, Plus, X,Loader2} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -15,14 +15,15 @@ import { useNavigate, useLocation } from "react-router";
 import { useCallback } from "react";
 import type { Thread } from "@/frontend/dexie/db";
 import { SignedIn, SignedOut, UserButton, useUser,SignInButton} from "@clerk/nextjs";
+import {useChat} from "@ai-sdk/react";
 
 
 export function AppSidebar() {
     const navigate = useNavigate();
 
     const location = useLocation();
-
     const { user,isLoaded } = useUser();
+    const { status } = useChat();
 
     const userId = isLoaded && user ? user.id : undefined;
 
@@ -92,9 +93,15 @@ export function AppSidebar() {
                                     <button
                                         onClick={(e) => handleDeleteThread(e, thread.id)}
                                         className="transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 text-white p-1 rounded-sm hover:bg-neutral-600 dark:hover:bg-neutral-600 transition-all duration-200 ease-out"
+                                        disabled={status === "streaming"}
                                     >
-                                        <X size={14} />
+                                        {status === "streaming" ? (
+                                            <Loader2 size={14} className="animate-spin h-4 w-4" />
+                                        ) : (
+                                            <X size={14} />
+                                        )}
                                     </button>
+
                                 </div>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

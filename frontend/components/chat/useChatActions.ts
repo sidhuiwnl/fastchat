@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {AI_MODELS} from "@/lib/model";
 import {toast} from "sonner";
-import {updateMessage} from "@/frontend/dexie/queries";
+
 
 export function useChatActions() {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
@@ -19,24 +19,24 @@ export function useChatActions() {
     setEditedContent(content);
   };
 
-  const handleSaveEdit = async (userId: string | undefined, threadId: string, messageId: string) => {
-    try {
-      if (!editedContent.trim()) {
-        toast.error("Message cannot be empty");
-        return false;
-      }
-
-      await updateMessage(userId, threadId, messageId, editedContent);
-      setEditingMessageId(null);
-      setEditedContent("")
-      toast.success("Message updated");
-      return true;
-    } catch (error) {
-      console.error('Error updating message:', error);
-      toast.error("Failed to update message");
-      return false;
-    }
-  };
+  // const handleSaveEdit = async (userId: string | undefined, threadId: string, messageId: string) => {
+  //   try {
+  //     if (!editedContent.trim()) {
+  //       toast.error("Message cannot be empty");
+  //       return false;
+  //     }
+  //
+  //     await updateMessage(userId, threadId, messageId, editedContent);
+  //     setEditingMessageId(null);
+  //     setEditedContent("")
+  //     toast.success("Message updated");
+  //     return true;
+  //   } catch (error) {
+  //     console.error('Error updating message:', error);
+  //     toast.error("Failed to update message");
+  //     return false;
+  //   }
+  // };
 
   return {
     hoveredMessageId,
@@ -47,7 +47,6 @@ export function useChatActions() {
     setEditedContent,
     handleCopy,
     handleEdit,
-    handleSaveEdit,
     selectedModel,
     setSelectedModel,
   };

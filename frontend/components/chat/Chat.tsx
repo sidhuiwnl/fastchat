@@ -9,7 +9,6 @@ import { createMessage, createThread } from "@/frontend/dexie/queries";
 import { v4 as uuidv4 } from 'uuid';
 import { useAPIKeyStore } from "@/frontend/stores/APIKeyStore";
 import { useModelStore } from "@/frontend/stores/ModelStore";
-import { AIModel } from "@/lib/model";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useMessageSummary } from "@/hooks/useMessageSummary";
@@ -67,7 +66,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
       };
 
       try {
-        await createMessage(threadId,userId,aiMessage);
+        await createMessage(threadId,aiMessage,userId);
         const isFirst = !id
         if(isFirst){
           await complete(input.trim(), {
@@ -98,7 +97,6 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     setEditedContent,
     handleCopy,
     handleEdit,
-    handleSaveEdit,
   } = useChatActions();
 
 
@@ -150,7 +148,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
       createdAt: new Date(),
     };
 
-    await createMessage(threadId,userId,userMessage);
+    await createMessage(threadId,userMessage,userId);
 
     try {
         await append(userMessage, {
@@ -188,14 +186,7 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
     );
   }
 
-  const handleSaveMessageEdit = async (messageId: string) => {
-    const success = await handleSaveEdit(userId, threadId, messageId);
 
-    if (success) {
-
-      await reload()
-    }
-  };
 
   return (
       <div className="h-full w-full relative flex flex-col">
@@ -213,7 +204,6 @@ const Chat = ({ threadId, initialMessages,userId }: ChatProps) => {
                 setEditedContent={setEditedContent}
                 handleCopy={handleCopy}
                 handleEdit={handleEdit}
-                handleSaveEdit={handleSaveMessageEdit}
                 reload={reload}
                 status={status as ChatStatus}
             />

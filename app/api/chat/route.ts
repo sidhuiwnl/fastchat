@@ -7,11 +7,13 @@ import {headers} from "next/headers";
 import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 30;
-export const runtime = 'edge';
+
 
 export async function POST(req: NextRequest) {
     try {
         const { messages,model } = await req.json();
+
+        console.log(messages);
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
             return new Response(

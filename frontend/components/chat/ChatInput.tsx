@@ -4,7 +4,10 @@ import { Paperclip, ArrowRight, ChevronDown, Search,Square } from 'lucide-react'
 import { cn } from '@/lib/utils';
 import { AI_MODELS, AIModel } from "@/lib/model";
 import { useSelectedItem,useMenuStore } from "@/frontend/stores/PromptStore";
+import { useAPIKeyStore } from "@/frontend/stores/APIKeyStore";
+import { getModelConfig } from "@/lib/model";
 
+import {NavLink} from "react-router";
 
 interface ChatInputProps {
     input: string;
@@ -33,6 +36,7 @@ const ChatInput: FC<ChatInputProps> = memo(({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const { clearSelection } = useMenuStore()
+    const { getKey } = useAPIKeyStore();
 
     // Determine the value to display
     const displayValue = hasUserTyped ? input : (modelInput ?? input);
@@ -81,6 +85,12 @@ const ChatInput: FC<ChatInputProps> = memo(({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Filter models based on available API keys
+    const availableModels = AI_MODELS.filter((model) => {
+        const provider = getModelConfig(model).provider;
+        return !!getKey(provider);
+    });
+
     return (
         <div className="w-full pb-4 px-4">
             <div className="max-w-4xl mx-auto">
@@ -106,11 +116,11 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                     <div className="h-4 w-px bg-black/10 dark:bg-white/10 mx-0.5" />
                                     <label
                                         className={cn(
-                                            "rounded-lg p-2 bg-neutral-800 dark:bg-neutral-800 cursor-pointer",
+                                            "rounded-lg p-2 bg-neutral-800 dark:bg-neutral-800 cursor-not-allowed",
                                             "hover:bg-neutral-700 dark:hover:bg-neutral-700",
                                             "text-white dark:text-white"
                                         )}
-                                        aria-label="Attach file"
+                                        aria-label="Attach file (disabled)"
                                     >
                                         <input type="file" className="hidden" />
                                         <Paperclip className="w-4 h-4 transition-colors" />
@@ -118,10 +128,11 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                     <button
                                         type="button"
                                         className={cn(
-                                            "rounded-lg p-2 bg-neutral-800 dark:bg-neutral-800",
+                                            "rounded-lg p-2 bg-neutral-800 dark:bg-neutral-800 cursor-not-allowed",
                                             "hover:bg-neutral-700 dark:hover:bg-neutral-700",
                                             "text-white dark:text-white"
                                         )}
+                                        disabled={true}
                                         aria-label="Search"
                                     >
                                         <Search className="w-4 h-4" />
@@ -130,8 +141,8 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                         <button
                                             type="button"
                                             className={cn(
-                                                "flex items-center gap-1 text-sm rounded-lg px-3 py-2",
-                                                "bg-neutral-800 dark:bg-neutral-800 hover:bg-neutral-700 dark:hover:bg-neutral-700",
+                                                "flex items-center gap-1 text-sm rounded-lg px-3 py-2 ",
+                                                "bg-neutral-800 dark:bg-neutral-800 hover:bg-neutral-700 dark:hover:bg-neutral-700  ",
                                                 "text-white dark:text-white"
                                             )}
                                             onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
@@ -141,23 +152,40 @@ const ChatInput: FC<ChatInputProps> = memo(({
                                         </button>
                                         {isModelDropdownOpen && (
                                             <div className="absolute bottom-full mb-2 left-0 z-10 w-48 bg-neutral-800 dark:bg-neutral-800 rounded-lg shadow-lg border border-white/10">
-                                                {AI_MODELS.map((model) => (
-                                                    <button
-                                                        key={model}
-                                                        type="button"
-                                                        className={cn(
-                                                            "w-full text-left px-4 py-2 text-sm hover:bg-neutral-700 dark:hover:bg-neutral-700",
-                                                            "text-white dark:text-white",
-                                                            model === selectedModel ? "bg-neutral-600 dark:bg-neutral-600" : ""
-                                                        )}
-                                                        onClick={() => {
-                                                            onModelChange(model);
-                                                            setIsModelDropdownOpen(false);
-                                                        }}
-                                                    >
-                                                        {model}
-                                                    </button>
-                                                ))}
+                                                {availableModels.length === 0 ? (
+                                                    <div className="px-4 py-2 text-sm text-white">Add an API key to select a model</div>
+                                                ) : (
+                                                    availableModels.map((model) => (
+                                                        <button
+                                                            key={model}
+                                                            type="button"
+                                                            className={cn(
+                                                                "w-full text-left px-4 py-2 text-sm text-white dark:text-white",
+                                                                "transition-colors duration-150 ease-in-out",
+                                                                "hover:bg-neutral-700 dark:hover:bg-neutral-700",
+                                                                "rounded-t-lg",
+                                                                model === selectedModel && "bg-neutral-600 dark:bg-neutral-600"
+                                                            )}
+
+                                                            onClick={() => {
+                                                                onModelChange(model);
+                                                                setIsModelDropdownOpen(false);
+                                                            }}
+                                                        >
+                                                            {model}
+                                                        </button>
+                                                    ))
+                                                )}
+                                                <div className="px-4 py-2">
+                                                    <NavLink to="/apikeys">
+                                                        <button
+                                                            type="button"
+                                                            className="w-full text-center border rounded-xl px-4 py-2 text-sm  text-white cursor-pointer"
+                                                        >
+                                                            Add API Keys
+                                                        </button>
+                                                    </NavLink>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

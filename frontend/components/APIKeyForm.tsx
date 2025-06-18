@@ -29,7 +29,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function APIKeyForm() {
     return (
-        <Card className="w-full max-w-2xl mx-auto">
+        <div className="w-screen h-screen flex flex-col items-center justify-center ">
+            <Card className=" w-full max-w-2xl mx-auto">
             <CardHeader>
                 <div className="flex items-center gap-2">
                     <Key className="h-5 w-5" />
@@ -43,6 +44,9 @@ export default function APIKeyForm() {
                 <Form />
             </CardContent>
         </Card>
+
+        </div>
+
     );
 }
 

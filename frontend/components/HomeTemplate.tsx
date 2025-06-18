@@ -9,7 +9,8 @@ import {useMenuStore} from "@/frontend/stores/PromptStore";
 
 export default function Component() {
     const { user } = useUser();
-    const username = user?.username as string;
+
+    const username = user?.fullName as string;
 
     const [activeSection, setActiveSection] = useState<string | null>(null)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -18,7 +19,7 @@ export default function Component() {
     const { setSelectedItem} = useMenuStore()
 
 
-
+    
 
     const menuData = {
         Write: [
